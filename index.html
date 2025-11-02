@@ -615,12 +615,30 @@
             modalOverlay.classList.add('active');
         });
         
-        confirmBtn.addEventListener('click', function() {
-            playClickSound();
-            modalOverlay.classList.remove('active');
-            setTimeout(() => window.open(TARGET_URL, '_blank'), 300);
-        });
-        
+       confirmBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    playClickSound();
+    
+    // Try creating a link first (best for mobile)
+    const link = document.createElement('a');
+    link.href = TARGET_URL;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Fallback: Try window.open
+    setTimeout(() => {
+        const newWindow = window.open(TARGET_URL, '_blank', 'noopener,noreferrer');
+        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+            // Last resort: navigate in same window
+            window.location.href = TARGET_URL;
+        }
+    }, 100);
+    
+    modalOverlay.classList.remove('active');
+});
         cancelBtn.addEventListener('click', function() {
             playClickSound();
             modalOverlay.classList.remove('active');
