@@ -619,29 +619,18 @@
     e.preventDefault();
     playClickSound();
     
-    // Create link with special target
-    const link = document.createElement('a');
-    link.href = TARGET_URL;
-    link.target = '_blank';  // Try new tab first
-    link.rel = 'noopener noreferrer';
-    
-    // If in iframe, try to reference parent
-    if (window.frameElement) {
-        try {
-            const parentDoc = window.parent.document;
-            parentDoc.body.appendChild(link);
-            link.click();
-            parentDoc.body.removeChild(link);
-        } catch(e) {
-            // Fallback
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+    try {
+        // Try to open in parent/top window
+        if (window.parent && window.parent !== window) {
+            window.parent.open(TARGET_URL, '_blank', 'noopener,noreferrer');
+        } else if (window.top && window.top !== window) {
+            window.top.open(TARGET_URL, '_blank', 'noopener,noreferrer');
+        } else {
+            window.open(TARGET_URL, '_blank', 'noopener,noreferrer');
         }
-    } else {
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    } catch (e) {
+        // Fallback if cross-origin restrictions prevent access
+        window.open(TARGET_URL, '_blank', 'noopener,noreferrer');
     }
     
     modalOverlay.classList.remove('active');
