@@ -615,27 +615,34 @@
             modalOverlay.classList.add('active');
         });
         
-       confirmBtn.addEventListener('click', function(e) {
+      confirmBtn.addEventListener('click', function(e) {
     e.preventDefault();
     playClickSound();
     
-    // Try creating a link first (best for mobile)
+    // Create link with special target
     const link = document.createElement('a');
     link.href = TARGET_URL;
-    link.target = '_blank';
+    link.target = '_blank';  // Try new tab first
     link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
     
-    // Fallback: Try window.open
-    setTimeout(() => {
-        const newWindow = window.open(TARGET_URL, '_blank', 'noopener,noreferrer');
-        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-            // Last resort: navigate in same window
-            window.location.href = TARGET_URL;
+    // If in iframe, try to reference parent
+    if (window.frameElement) {
+        try {
+            const parentDoc = window.parent.document;
+            parentDoc.body.appendChild(link);
+            link.click();
+            parentDoc.body.removeChild(link);
+        } catch(e) {
+            // Fallback
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
-    }, 100);
+    } else {
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
     
     modalOverlay.classList.remove('active');
 });
